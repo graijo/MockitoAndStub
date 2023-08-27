@@ -15,4 +15,10 @@ public class TodoBusinessimplStub implements TodoService {
     public List<String> retrieveTodos(String user) {
         return Arrays.asList("Learn spring ","Learn spring MVC","Learn python");
     }
+
+    @Override
+    public void deleteTodo(String todo) {
+
+    }
+
 }

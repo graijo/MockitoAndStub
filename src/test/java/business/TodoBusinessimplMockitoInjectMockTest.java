@@ -1,37 +1,51 @@
 package business;
 
-import data.TodoBusinessimplStub;
 import data.TodoService;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class TodoBusinessimplMockTest {
-    /*
-    Mocking is creating object that simulate the behaviour of real objects.
-    Unlike stub ,mocks can be created dynamically from code-at run time.
-    mock offer more functionality than stub
-    You can verify method calls and a lot of things.
-    Mock is dynamic and Stub is static
-     */
+/**
+ * When a test class is annotated with @RunWith(MockitoJUnitRunner.class),
+ * Then @Mock will create mock method and available to us .
+ * TodoService todoService=mock(TodoService.class);
+ *
+ * No. of lines of code removed from application will improve the maintainability of the code.
+ */
+@RunWith(MockitoJUnitRunner.class)
+public class TodoBusinessimplMockitoInjectMockTest {
+    @Mock
+    TodoService todoService;
+//    @InjectMocks will look for all dependencies in TodoBusinessimpl class for TodoService.
+    //@RunWith(MockitoJUnitRunner.class) will ensure that @InjectMocks will create instance and
+// appropriate mock are passed and values are injected.
+    @InjectMocks
+    TodoBusinessimpl todoBusinessimpl;
+    @Captor
+    ArgumentCaptor<String> stringArgumentCaptor;
+
     @Test
     public void testRetrieveToDoForSpring_UsingMock_withEmptyList(){
-        /*
-        mock is a method in mockito class
-        create mock object of class or interface
-        Mockito mock return default values when they are not stubbed
-         */
-        TodoService todoService=mock(TodoService.class);
+// @Mock removed below
+//        TodoService todoService=mock(TodoService.class);
         when(todoService.retrieveTodos("intern_user")).thenReturn(Arrays.asList());
-        TodoBusinessimpl todoBusinessimpl=new TodoBusinessimpl(todoService);
+        // @InjectMocks removed below
+//        TodoBusinessimpl todoBusinessimpl=new TodoBusinessimpl(todoService);
+        //invocation
         List<String> filteredTods=todoBusinessimpl.retrieveToDoForSpring("intern_user");
         Assert.assertEquals(0,filteredTods.size());
 
@@ -40,54 +54,35 @@ public class TodoBusinessimplMockTest {
     }
     @Test
     public void testRetrieveToDoForSpring_UsingMock_withValidList(){
-        /*
-        mock is a method in mockito class
-        create mock object of class or interface
-        Mockito mock return default values when they are not stubbed
 
-        Dependent interface and its method are not accessable will be mocked and then class and method will be
-        called.
-         */
-        TodoService todoService=mock(TodoService.class);
-        //Sets a return value to be returned when the method is called with a specific value
+
         when(todoService.retrieveTodos("intern_user"))
                 .thenReturn(Arrays.asList("spring mvc","spring a","hibernate"));
 
-        //Then actual method is called to see if it returns expected values
-        //TodoBusinessimpl class contains method that needs to be tested.
-        // for TodoBusinessimpl,need todoService dependency which mocked above
-        TodoBusinessimpl todoBusinessimpl=new TodoBusinessimpl(todoService);
         List<String> filteredTods=todoBusinessimpl.retrieveToDoForSpring("intern_user");
         Assert.assertEquals(2,filteredTods.size());
-
-        //mock is flexible. Tests can be wrote on the fly without updating stub classes
-
 
 
     }
 
     @Test
     public void testRetrieveToDoForSpring_UsingMock_withWrongList(){
-        TodoService todoService=mock(TodoService.class);
         when(todoService.retrieveTodos("intern_user"))
                 .thenReturn(Arrays.asList("Java","Python","NodeJs"));
-        TodoBusinessimpl todoBusinessimpl=new TodoBusinessimpl(todoService);
         List<String> filteredTods=todoBusinessimpl.retrieveToDoForSpring("intern_user");
         Assert.assertEquals(0,filteredTods.size());
 
     }
 
-    //TODO BDD mockito0
+    //TODO BDD mockito
     @Test
     public void testRetrieveToDoForSpring_UsingMock_withValidList_BDD(){
         //GIVEN
-        TodoService todoService=mock(TodoService.class);
 //        when(todoService.retrieveTodos("intern_user"))
 //                .thenReturn(Arrays.asList("spring mvc","spring a","hibernate"));
         //OR
         given(todoService.retrieveTodos("intern_user"))
                 .willReturn(Arrays.asList("spring mvc","spring a","hibernate"));
-        TodoBusinessimpl todoBusinessimpl=new TodoBusinessimpl(todoService);
         //WHEN
         List<String> filteredTods=todoBusinessimpl.retrieveToDoForSpring("intern_user");
         //THEN
@@ -95,5 +90,16 @@ public class TodoBusinessimplMockTest {
         //OR
         assertThat(filteredTods.size(),is(2));
 
+    }
+
+    @Test
+    public void captureArgument() {
+        given(todoService.retrieveTodos("Antony")).willReturn(Arrays.asList("Learn Spring MVC",
+                "Learn Spring", "Learn to Dance"));
+
+        todoBusinessimpl.deleteTodosNotRelatedToSpring("Antony");
+        verify(todoService).deleteTodo(stringArgumentCaptor.capture());
+
+        assertEquals("Learn to Dance", stringArgumentCaptor.getValue());
     }
 }
